@@ -2,3 +2,4 @@ config.h
 *.o
 *.rej
 dwm
+dwm-msg
