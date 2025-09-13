@@ -1,0 +1,25 @@
+diff --git a/dwm.c b/dwm.c
+index f801c71..3f9902a 100644
+--- a/dwm.c
++++ b/dwm.c
+@@ -1928,8 +1928,18 @@ togglefloating(const Arg *arg)
+ 		return;
+ 	selmon->sel->isfloating = !selmon->sel->isfloating || selmon->sel->isfixed;
+ 	if (selmon->sel->isfloating)
+-		resize(selmon->sel, selmon->sel->x, selmon->sel->y,
+-			selmon->sel->w, selmon->sel->h, 0);
++  {
++    /* target size: 1/2 of the monitor's window area (minus borders) */
++		int nw = selmon->ww / 2 - 2 * selmon->sel->bw;
++		int nh = selmon->wh / 2 - 2 * selmon->sel->bw;
++		if (nw < 1) nw = 1;
++		if (nh < 1) nh = 1;
++
++		/* center inside the monitor window area (wx/wy exclude bars) */
++		int nx = selmon->wx + (selmon->ww - (nw + 2 * selmon->sel->bw)) / 2;
++		int ny = selmon->wy + (selmon->wh - (nh + 2 * selmon->sel->bw)) / 2;
++    resize(selmon->sel, nx, ny, nw, nh, 0);
++  }
+ 	arrange(selmon);
+ }
+ 
