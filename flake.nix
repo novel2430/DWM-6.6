@@ -13,6 +13,7 @@
         libX11
         libXinerama
         libXft
+        yajl
       ];
   in {
     devShell.x86_64-linux = pkgs.mkShell {
