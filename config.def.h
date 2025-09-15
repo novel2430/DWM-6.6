@@ -71,42 +71,12 @@ static char dmenumon[2] = "0"; /* component of dmenucmd, manipulated in spawn() 
 static const char *termcmd[] = { "wezterm", NULL };
 static const char *dmenucmd[] = { "rofi", "-show", "drun", NULL };
 static const char *runmenucmd[] = { "rofi", "-show", "run", NULL };
-static const char *browsercmd[] = { "zen-browser", NULL };
-static const char *lockcmd[] = { "x-lock", NULL };
-static const char *clipboardcmd[] = { "greenclip-rofi", NULL };
-static const char *powermenucmd[] = { "rofi-power-menu", NULL };
-static const char *screenshotcmd[] = { "maim-screenshot", "full", NULL };
-static const char *screenshotselectcmd[] = { "maim-screenshot", "select", NULL };
-static const char *volumemutecmd[] = { "my-volume", "mute", NULL };
-static const char *volumedowncmd[] = { "my-volume", "down", NULL };
-static const char *volumeupcmd[] = { "my-volume", "up", NULL };
-static const char *brightnessupcmd[] = { "brightnessctl", "set", "10%+", NULL };
-static const char *brightnessdowncmd[] = { "brightnessctl", "set", "10%-", NULL };
-static const char *playerctlplaypausecmd[] = { "playerctl", "play-pause", NULL };
-static const char *playerctlnextcmd[] = { "playerctl", "next", NULL };
-static const char *playerctlprevcmd[] = { "playerctl", "previous", NULL };
-
-#include <X11/XF86keysym.h>
 
 static const Key keys[] = {
 	/* modifier                     key        function        argument */
 	{ MODKEY,                       XK_d,      spawn,          {.v = dmenucmd } },
 	{ MODKEY,                       XK_r,      spawn,          {.v = runmenucmd } },
 	{ MODKEY,                       XK_Return, spawn,          {.v = termcmd } },
-	{ MODKEY|ShiftMask,             XK_f,      spawn,          {.v = browsercmd } },
-	{ MODKEY|ShiftMask,             XK_l,      spawn,          {.v = lockcmd } },
-	{ MODKEY,                       XK_c,      spawn,          {.v = clipboardcmd } },
-	{ MODKEY|ShiftMask,             XK_p,      spawn,          {.v = powermenucmd } },
-	{ 0,                            XF86XK_AudioMute, spawn,   {.v = volumemutecmd} },
-	{ 0,                            XF86XK_AudioLowerVolume, spawn, {.v = volumedowncmd} },
-	{ 0,                            XF86XK_AudioRaiseVolume, spawn, {.v = volumeupcmd} },
-	{ 0,                            XF86XK_MonBrightnessUp, spawn, {.v = brightnessupcmd} },
-	{ 0,                            XF86XK_MonBrightnessDown, spawn, {.v = brightnessdowncmd} },
-	{ 0,                            XK_Print, spawn,           {.v = screenshotcmd} },
-	{ MODKEY,                       XK_Print, spawn,           {.v = screenshotselectcmd} },
-	{ 0,                            XF86XK_AudioPlay, spawn,       {.v = playerctlplaypausecmd} },
-	{ 0,                            XF86XK_AudioNext, spawn,       {.v = playerctlnextcmd} },
-	{ 0,                            XF86XK_AudioPrev, spawn,       {.v = playerctlprevcmd} },
 	// { MODKEY,                       XK_b,      togglebar,      {0} },
 	{ MODKEY,                       XK_j,      focusstack,     {.i = +1 } },
 	{ MODKEY,                       XK_k,      focusstack,     {.i = -1 } },
