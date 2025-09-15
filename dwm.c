@@ -179,6 +179,7 @@ static void configure(Client *c);
 static void configurenotify(XEvent *e);
 static void configurerequest(XEvent *e);
 static Monitor *createmon(void);
+static void cycleview(const Arg *arg);
 static void destroynotify(XEvent *e);
 static void detach(Client *c);
 static void detachstack(Client *c);
@@ -724,6 +725,28 @@ createmon(void)
 
 	return m;
 }
+
+void
+cycleview(const Arg *arg)
+{
+    /* arg->i > 0 表示下一标签，< 0 表示上一标签 */
+    int dir = (arg && arg->i < 0) ? -1 : 1;
+
+    if (!selmon)
+        return;
+
+    /* curtag: 1..LENGTH(tags)，0 代表“all tags” */
+    unsigned int cur = selmon->pertag->curtag;
+    if (cur == 0)  /* 如果当前是 all-tags 视图，就从 1 开始 */
+        cur = 1;
+
+    int ntags = LENGTH(tags);
+    int next = ((int)cur - 1 + dir + ntags) % ntags + 1;
+
+    Arg a = {.ui = 1u << (next - 1)};
+    view(&a);  /* 借用现有 view() 完成切换并应用 per-tag 状态 */
+}
+
 
 void
 destroynotify(XEvent *e)
