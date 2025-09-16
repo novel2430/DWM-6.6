@@ -179,6 +179,7 @@ static void configure(Client *c);
 static void configurenotify(XEvent *e);
 static void configurerequest(XEvent *e);
 static Monitor *createmon(void);
+static void cycleclientsglobal(const Arg *arg);
 static void cyclelayout(const Arg *arg);
 static void cycleview(const Arg *arg);
 static void destroynotify(XEvent *e);
@@ -727,6 +728,80 @@ createmon(void)
 	}
 
 	return m;
+}
+
+void
+cycleclientsglobal(const Arg *arg)
+{
+    if (!selmon || !selmon->sel || (selmon->sel->isfullscreen && lockfullscreen))
+        return;
+
+    int dir = (arg && arg->i < 0) ? -1 : 1;
+    Client *c = NULL, *i;
+    int needwrap = 0;
+
+    /* —— 第一步：尝试在当前 tag 内按可见窗口循环 —— */
+    if (dir > 0) {
+        /* 正向：从 sel->next 开始找下一个可见者，不 wrap */
+        for (c = selmon->sel->next; c && !ISVISIBLE(c); c = c->next)
+            ;
+        if (!c)
+            needwrap = 1;
+    } else {
+        /* 反向：在 clients 链表里寻找 sel 之前最后一个可见者，不 wrap */
+        for (i = selmon->clients; i && i != selmon->sel; i = i->next)
+            if (ISVISIBLE(i)) c = i;
+        if (!c)
+            needwrap = 1;
+    }
+
+    if (!needwrap && c) {
+        focus(c);
+        restack(selmon);
+        return;
+    }
+
+    /* —— 第二步：已经“换圈”，跳到下/上一個有窗口的 tag —— */
+    unsigned int occ = 0;
+    for (i = selmon->clients; i; i = i->next)
+        occ |= i->tags;  /* 累计被占用的标签位 */
+
+    if (!(occ & TAGMASK))
+        return; /* 没有被占用的标签，直接返回 */
+    /* 相关宏与结构：ISVISIBLE/TAGMASK/Client/Arg。 */
+    /* 见文件中 TAGMASK/ISVISIBLE 宏与 Client、Arg 定义。 */
+
+    unsigned int cur = selmon->pertag->curtag;
+    if (cur == 0) cur = 1;  /* all-tags 视图时，从 1 开始 */
+    int ntags = LENGTH(tags);
+    int attempt = 0;
+    int next = (int)cur;
+
+    do {
+        next = ((next - 1 + dir + ntags) % ntags) + 1;  /* 1..ntags 循环 */
+        attempt++;
+    } while (attempt <= ntags && !(occ & (1u << (next - 1))));
+
+    if (attempt > ntags)
+        return; /* 理论上不会发生：无占用标签 */
+
+    Arg a = { .ui = 1u << (next - 1) };
+    view(&a);  /* 使用现有 view() 应用 per-tag 的 nmaster/mfact/layout/showbar 等并 focus/arrange */
+    /* view() 内部会依据 pertag->curtag 切换、并最终 focus(NULL)+arrange(selmon)。 */
+
+    /* —— 第三步：进入新 tag 后，选择一个可见窗口作为焦点 —— */
+    c = NULL;
+    if (dir > 0) {
+        for (i = selmon->clients; i; i = i->next)
+            if (ISVISIBLE(i)) { c = i; break; }   /* 正向：第一个可见者 */
+    } else {
+        for (i = selmon->clients; i; i = i->next)
+            if (ISVISIBLE(i)) c = i;              /* 反向：最后一个可见者 */
+    }
+    if (c) {
+        focus(c);
+        restack(selmon);
+    }
 }
 
 void
