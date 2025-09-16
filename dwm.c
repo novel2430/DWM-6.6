@@ -179,6 +179,7 @@ static void configure(Client *c);
 static void configurenotify(XEvent *e);
 static void configurerequest(XEvent *e);
 static Monitor *createmon(void);
+static void cyclelayout(const Arg *arg);
 static void cycleview(const Arg *arg);
 static void destroynotify(XEvent *e);
 static void detach(Client *c);
@@ -727,6 +728,24 @@ createmon(void)
 }
 
 void
+cyclelayout(const Arg *arg) {
+	Layout *l;
+	for(l = (Layout *)layouts; l != selmon->lt[selmon->sellt]; l++);
+	if(arg->i > 0) {
+		if(l->symbol && (l + 1)->symbol)
+			setlayout(&((Arg) { .v = (l + 1) }));
+		else
+			setlayout(&((Arg) { .v = layouts }));
+	} else {
+		if(l != layouts && (l - 1)->symbol)
+			setlayout(&((Arg) { .v = (l - 1) }));
+		else
+			setlayout(&((Arg) { .v = &layouts[LENGTH(layouts) - 2] }));
+	}
+}
+
+
+void
 cycleview(const Arg *arg)
 {
     /* arg->i > 0 表示下一标签，< 0 表示上一标签 */
@@ -746,7 +765,6 @@ cycleview(const Arg *arg)
     Arg a = {.ui = 1u << (next - 1)};
     view(&a);  /* 借用现有 view() 完成切换并应用 per-tag 状态 */
 }
-
 
 void
 destroynotify(XEvent *e)
